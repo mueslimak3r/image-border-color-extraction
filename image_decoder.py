@@ -17,7 +17,7 @@ def reject_outliers(data, m = 2.):
 def rgb_to_hex(r, g, b):
   return ('#{:X}{:X}{:X}').format(r, g, b)
 
-def average_pixels(img, pixels_coords):
+def average_pixels(img, pixels_coords, quiet):
     r, g, b = img.convert('RGB').split()
 
     r_sum = 0
@@ -32,8 +32,8 @@ def average_pixels(img, pixels_coords):
         r_list.append(r.getpixel((x, y)))
         g_list.append(g.getpixel((x, y)))
         b_list.append(b.getpixel((x, y)))
-    
-    print('found border %s pixels' % len(pixels_coords))
+    if not quiet:
+        print('found border %s pixels' % len(pixels_coords))
 
     r_list = reject_outliers(r_list)
     g_list = reject_outliers(g_list)
@@ -52,22 +52,22 @@ def average_pixels(img, pixels_coords):
     g_average = round(g_sum / len(g_list))
     b_average = round(b_sum / len(b_list))
 
-    print('averages: r %s g %s b %s' % (r_average, g_average, b_average))
+    if not quiet:
+        print('averages: r %s g %s b %s' % (r_average, g_average, b_average))
 
     average_color = rgb_to_hex(r_average, g_average, b_average)
-    print('got color: %s' % average_color)
-
     return average_color
 
 
-def get_border(img):
+def get_border(img, quiet):
     width, height = img.size
     pixels = []
 
     border_width = round(width * 0.05)
     border_height = round(height * 0.05)
 
-    print('border width %s border height %s' % (border_width, border_height))
+    if not quiet:
+        print('border width %s border height %s' % (border_width, border_height))
 
     for y in range(0, height):
         for x in range(0, width):
@@ -76,7 +76,7 @@ def get_border(img):
                 pixels.append((x, y))
     return list(set(pixels))
 
-def downscale_image(image_path):
+def downscale_image(image_path, quiet):
     try:
         img = Image.open(image_path) # open source image as PIL/Pillow object
     except IOError:
@@ -86,21 +86,25 @@ def downscale_image(image_path):
     aspect_ratio = height / width
 
     newsize = (200, round(200 * aspect_ratio))
-    print('aspect ratio %s new size %s old size %s' % (aspect_ratio, newsize, (width, height)))
+    if not quiet:
+        print('aspect ratio %s new size %s old size %s' % (aspect_ratio, newsize, (width, height)))
     new_img = img.resize(newsize)
     img.close()
     return new_img
 
-def decode(image_path, show_preview = False):
-    img = downscale_image(image_path)
+def decode(image_path, show_preview = False, quiet = True):
+    img = downscale_image(image_path, quiet)
 
     if img == None:
         print('error processing image')
         return '#FFF'
 
     pixels_to_average = []
-    pixels_to_average = get_border(img)
-    average_color = average_pixels(img, pixels_to_average)
+    pixels_to_average = get_border(img, quiet)
+    average_color = average_pixels(img, pixels_to_average, quiet)
+
+    if not quiet:
+        print('got color: %s' % average_color)
 
     if show_preview:
         img_size = img.size
@@ -116,24 +120,42 @@ def decode(image_path, show_preview = False):
 def main(argv):
 
     image_path = ''
+    show_preview = True
+    quiet = False
 
     try:
-        opts, args = getopt.getopt(argv,"hi:",["ifile="])
+        opts, args = getopt.getopt(argv,"hi:qp:")
     except getopt.GetoptError:
-        print('decode.py -i <inputfile>')
+        print('\n *   -q to supress debug output (except for errors)')
+        print(' *   -p OFF to disable showing the image at the end in a gui')
+        print(' *   when used as a module, the default is "-q -p OFF"\n')
+        print('image_decoder.py -i <inputfile> -q -p OFF\n')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print('decode.py -i <inputfile>')
+            print('\n *   -q to supress debug output (except for errors)')
+            print(' *   -p OFF to disable showing the image at the end in a gui')
+            print(' *   when used as a module, the default is "-q -p OFF"\n')
+            print('image_decoder.py -i <inputfile> -q -p OFF\n')
             sys.exit()
-        elif opt in ("-i", "--ifile"):
+        elif opt == '-i':
             image_path = arg
+        elif opt == '-q':
+            quiet = True
+        elif opt == '-p':
+            show_preview = False if arg == 'OFF' else True
+
     if image_path == '':
-        print('decode.py -i <inputfile>')
+        print('\n *   -q to supress debug output (except for errors)')
+        print(' *   -p OFF to disable showing the image at the end in a gui')
+        print(' *   when used as a module, the default is "-q -p OFF"\n')
+        print('image_decoder.py -i <inputfile> -q -p OFF\n')
         sys.exit(2)
 
-    decode(image_path, True)
+    color = decode(image_path, show_preview, quiet)
+    if quiet:
+        print(color)
 
 if __name__ == "__main__":
    main(sys.argv[1:])

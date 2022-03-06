@@ -97,6 +97,7 @@ def decode(image_path):
     new_im.show()
     new_im.close()
     img.close()
+    return average_color
 
 def main(argv):
 

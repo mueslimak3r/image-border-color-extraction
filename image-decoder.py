@@ -8,7 +8,11 @@ def reject_outliers(data, m = 2.):
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d/mdev if mdev else 0.
-    return data[s<m]
+
+    output = data[s<m].tolist()
+    if type(output[0]) == list:
+        return output[0]
+    return output
 
 def rgb_to_hex(r, g, b):
   return ('#{:X}{:X}{:X}').format(r, g, b)
@@ -29,6 +33,13 @@ def average_pixels(img, pixels_coords):
         g_list.append(g.getpixel((x, y)))
         b_list.append(b.getpixel((x, y)))
     
+    print('found border %s pixels' % len(pixels_coords))
+
+    print(reject_outliers(r_list))
+
+    print(reject_outliers(g_list))
+
+    print(reject_outliers(b_list))
     r_list = reject_outliers(r_list)
     g_list = reject_outliers(g_list)
     b_list = reject_outliers(b_list)
@@ -71,7 +82,10 @@ def get_border(img):
     return list(set(pixels))
 
 def downscale_image(image_path):
-    img = Image.open(image_path) # open source image as PIL/Pillow object
+    try:
+        img = Image.open(image_path) # open source image as PIL/Pillow object
+    except IOError:
+        print('%s could not be opened' % image_path)
     width, height = img.size
 
     aspect_ratio = height / width
@@ -84,6 +98,10 @@ def downscale_image(image_path):
 
 def decode(image_path, show_preview = False):
     img = downscale_image(image_path)
+
+    if img == None:
+        print('error processing image')
+        return '#FFF'
 
     pixels_to_average = []
     pixels_to_average = get_border(img)

@@ -2,13 +2,15 @@ import sys, getopt
 import numpy as np
 from PIL import Image
 
-def reject_outliers(data, m = 2.):
+def reject_outliers(data, m = 6.):
     if not isinstance(data, np.ndarray):
         data = np.array(data)
     d = np.abs(data - np.median(data))
+    #print(d)
     mdev = np.median(d)
-    s = d/mdev if mdev else 0.
+    s = d / (mdev if mdev else 1.)
 
+    #print(s)
     output = data[s<m].tolist()
     if type(output[0]) == list:
         return output[0]
@@ -38,6 +40,9 @@ def average_pixels(img, pixels_coords, quiet):
     r_list = reject_outliers(r_list)
     g_list = reject_outliers(g_list)
     b_list = reject_outliers(b_list)
+
+    if not quiet:
+        print('rejected outliers: r %s g %s b %s' % (len(pixels_coords) - len(r_list), len(pixels_coords) - len(g_list), len(pixels_coords) - len(b_list)))
 
     for r in r_list:
         r_sum += r

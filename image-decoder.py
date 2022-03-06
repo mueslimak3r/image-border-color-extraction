@@ -82,20 +82,21 @@ def downscale_image(image_path):
     img.close()
     return new_img
 
-def decode(image_path):
+def decode(image_path, show_preview = False):
     img = downscale_image(image_path)
 
     pixels_to_average = []
     pixels_to_average = get_border(img)
     average_color = average_pixels(img, pixels_to_average)
 
-    old_size = img.size
-    new_size = (round(img.width * 1.5), round(img.height * 1.5))
-    new_im = Image.new("RGB", new_size, average_color)
-    new_im.paste(img, ((new_size[0]-old_size[0])//2,
-                      (new_size[1]-old_size[1])//2))
-    new_im.show()
-    new_im.close()
+    if show_preview:
+        img_size = img.size
+        preview_size = (round(img.width * 1.5), round(img.height * 1.5))
+        preview_img = Image.new("RGB", preview_size, average_color)
+        preview_img.paste(img, ((preview_size[0]-img_size[0])//2,
+                        (preview_size[1]-img_size[1])//2))
+        preview_img.show()
+        preview_img.close()
     img.close()
     return average_color
 
@@ -119,7 +120,7 @@ def main(argv):
         print('decode.py -i <inputfile>')
         sys.exit(2)
 
-    decode(image_path)
+    decode(image_path, True)
 
 if __name__ == "__main__":
    main(sys.argv[1:])

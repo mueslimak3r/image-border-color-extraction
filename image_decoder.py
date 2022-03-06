@@ -35,11 +35,6 @@ def average_pixels(img, pixels_coords):
     
     print('found border %s pixels' % len(pixels_coords))
 
-    print(reject_outliers(r_list))
-
-    print(reject_outliers(g_list))
-
-    print(reject_outliers(b_list))
     r_list = reject_outliers(r_list)
     g_list = reject_outliers(g_list)
     b_list = reject_outliers(b_list)

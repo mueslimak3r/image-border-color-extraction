@@ -6,18 +6,21 @@ def reject_outliers(data, m = 6.):
     if not isinstance(data, np.ndarray):
         data = np.array(data)
     d = np.abs(data - np.median(data))
-    #print(d)
     mdev = np.median(d)
     s = d / (mdev if mdev else 1.)
-
-    #print(s)
     output = data[s<m].tolist()
+
+    # sometimes numpy tolist() returns a nested list
     if type(output[0]) == list:
         return output[0]
+
     return output
 
+def clamp(x): 
+    return max(0, min(x, 255))
+
 def rgb_to_hex(r, g, b):
-  return ('#{:X}{:X}{:X}').format(r, g, b)
+    return "#{0:02x}{1:02x}{2:02x}".format(clamp(r), clamp(g), clamp(b))
 
 def average_pixels(img, pixels_coords, quiet):
     r, g, b = img.convert('RGB').split()
@@ -34,6 +37,7 @@ def average_pixels(img, pixels_coords, quiet):
         r_list.append(r.getpixel((x, y)))
         g_list.append(g.getpixel((x, y)))
         b_list.append(b.getpixel((x, y)))
+
     if not quiet:
         img_size = img.width * img.height
         print(img.width, img.height)
@@ -90,6 +94,7 @@ def downscale_image(image_path, quiet):
         img = Image.open(image_path) # open source image as PIL/Pillow object
     except IOError:
         print('%s could not be opened' % image_path)
+        return None
     width, height = img.size
 
     aspect_ratio = height / width
@@ -118,7 +123,11 @@ def decode(image_path, show_preview = False, quiet = True):
     if show_preview:
         img_size = img.size
         preview_size = (round(img.width * 1.5), round(img.height * 1.5))
-        preview_img = Image.new("RGB", preview_size, average_color)
+
+        # for some reason PIL doesn't play nicely with hex inputs here
+        # manually convert back to RGB here since occasionally it won't accept certain values
+        preview_img = Image.new("RGB", preview_size, tuple(int(average_color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4)))
+
         preview_img.paste(img, ((preview_size[0]-img_size[0])//2,
                         (preview_size[1]-img_size[1])//2))
         preview_img.show()

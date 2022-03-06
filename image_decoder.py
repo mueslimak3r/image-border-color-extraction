@@ -35,7 +35,9 @@ def average_pixels(img, pixels_coords, quiet):
         g_list.append(g.getpixel((x, y)))
         b_list.append(b.getpixel((x, y)))
     if not quiet:
-        print('found border %s pixels' % len(pixels_coords))
+        img_size = img.width * img.height
+        print(img.width, img.height)
+        print('found border %s pixels (%s percent of %s pixels in scaled image)' % (len(pixels_coords), (len(pixels_coords) / img_size) * 100, img_size))
 
     r_list = reject_outliers(r_list)
     g_list = reject_outliers(g_list)
@@ -68,8 +70,10 @@ def get_border(img, quiet):
     width, height = img.size
     pixels = []
 
-    border_width = round(width * 0.05)
-    border_height = round(height * 0.05)
+    percent = 0.05
+
+    border_width = round(width * percent)
+    border_height = round(height * percent)
 
     if not quiet:
         print('border width %s border height %s' % (border_width, border_height))

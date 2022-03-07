@@ -14,7 +14,7 @@ Gets the pixels from the outer 5% of an image, discards outlier values, and retu
 # Implementation
 * Downscale the source image to have a width of 200px, keeping the aspect ratio. We don't need to keep the original (large) resolution.
 * Choose a percentage of the image's border on each axis to use for the color calculation (I use 5%), and put the coordinates of these pixels into a list.
-* Split the scaled image to individual `R, G, B` color channels and store those in a list.
+* Split the scaled image to individual lists of `R, G, B` color channels.
 * Populate 3 more lists of just the color values for the perimeter pixels of those channels (`0-255`).
 * Use `numpy` to remove statistically significant outliers from each of the lists made in the previous step.
 * Calculate the average value for each channel from the result of the previous step.
